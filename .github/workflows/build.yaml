@@ -29,6 +29,7 @@ jobs:
               "root": "examples/lighting-app/esp32/",
               "appbin": "chip-lighting-app.bin",
               "idf_target": "esp32c3",
+              "sdkconfig": "sdkconfig.defaults",
               "chip_ref": "732f797f9baad2619675536ae5c5fd4913ddb032"
             }
           - {
@@ -37,6 +38,7 @@ jobs:
               "root": "examples/lighting-app/esp32/",
               "appbin": "chip-lighting-app.bin",
               "idf_target": "esp32",
+              "sdkconfig": "sdkconfig.defaults",
               "chip_ref": "732f797f9baad2619675536ae5c5fd4913ddb032"
             }
           - {
@@ -45,6 +47,7 @@ jobs:
               "root": "examples/lighting-app/esp32/",
               "appbin": "chip-lighting-app.bin",
               "idf_target": "esp32c3",
+              "sdkconfig": "sdkconfig.defaults",
               "chip_ref": "732f797f9baad2619675536ae5c5fd4913ddb032"
             }
           - {
@@ -53,6 +56,7 @@ jobs:
               "root": "examples/light-switch-app/esp32/",
               "appbin": "chip-light-switch-app.bin",
               "idf_target": "esp32c3",
+              "sdkconfig": "sdkconfig.defaults.esp32c3",
               "chip_ref": "732f797f9baad2619675536ae5c5fd4913ddb032"
             }
           - {
@@ -61,6 +65,7 @@ jobs:
               "root": "examples/all-clusters-app/esp32/",
               "appbin": "chip-all-clusters-app.bin",
               "idf_target": "esp32",
+              "sdkconfig": "sdkconfig.defaults",
               "chip_ref": "732f797f9baad2619675536ae5c5fd4913ddb032"
             }
 
@@ -100,13 +105,14 @@ jobs:
           source scripts/activate.sh
           root="${{ matrix.firmware.root }}"
           rm -f "$root"/sdkconfig
-          cp "../${{ matrix.firmware.dir }}/sdkconfig.defaults" "${root}"
+          cp "../${{ matrix.firmware.dir }}"/sdkconfig* "${root}"
           (
             cd "$root"
-            sed -i "s/CONFIG_DEVICE_SOFTWARE_VERSION=.*/CONFIG_DEVICE_SOFTWARE_VERSION=\"${{ steps.git-version.outputs.hash }}\"/" sdkconfig.defaults
-            idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults" set-target "${{ matrix.firmware.idf_target }}" build
+            sed -i "s/CONFIG_DEVICE_SOFTWARE_VERSION=.*/CONFIG_DEVICE_SOFTWARE_VERSION=\"${{ steps.git-version.outputs.hash }}\"/" sdkconfig_nabucasa
+            idf.py -D SDKCONFIG_DEFAULTS="${{ matrix.firmware.sdkconfig }};sdkconfig_nabucasa" set-target "${{ matrix.firmware.idf_target }}" build
           )
           mkdir -p ../deploy/${{ matrix.firmware.dir }}
+          cp ${{ matrix.firmware.root }}/sdkconfig ../deploy/${{ matrix.firmware.dir }}
           cp ${{ matrix.firmware.root }}/build/${{ matrix.firmware.appbin }} ../deploy/${{ matrix.firmware.dir }}
           cp ${{ matrix.firmware.root }}/build/bootloader/bootloader.bin ../deploy/${{ matrix.firmware.dir }}
           cp ${{ matrix.firmware.root }}/build/partition_table/partition-table.bin ../deploy/${{ matrix.firmware.dir }}
@@ -142,6 +148,7 @@ jobs:
       - name: Copy artifacts
         shell: bash
         run: |
+          rm "artifacts/"*/*/*/sdkconfig
           cp -R "artifacts/"*/* ./
           rm -r "artifacts/"
  
