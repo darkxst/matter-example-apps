@@ -51,6 +51,15 @@ jobs:
               "chip_ref": "732f797f9baad2619675536ae5c5fd4913ddb032"
             }
           - {
+              "name": "lighting-app-esp32-h2",
+              "dir": "lighting-app-example/esp32-h2/",
+              "root": "examples/lighting-app/esp32/",
+              "appbin": "chip-lighting-app.bin",
+              "idf_target": "esp32h2",
+              "sdkconfig": "sdkconfig.defaults.esp32h2",
+              "chip_ref": "732f797f9baad2619675536ae5c5fd4913ddb032"
+            }
+          - {
               "name": "light-switch-app-esp32-c3",
               "dir": "light-switch-app-example/esp32-c3/",
               "root": "examples/light-switch-app/esp32/",
