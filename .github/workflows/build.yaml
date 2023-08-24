@@ -79,7 +79,6 @@ jobs:
         with:
           repository: project-chip/connectedhomeip
           ref: ${{ matrix.firmware.chip_ref }}
-          submodules: true
           path: connectedhomeip
 
       - name: Get firmware git hash
