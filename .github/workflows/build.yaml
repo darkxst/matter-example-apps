@@ -29,7 +29,8 @@ jobs:
               "root": "examples/lighting-app/esp32/",
               "appbin": "chip-lighting-app.bin",
               "idf_target": "esp32c3",
-              "chip_ref": "v1.1.0.1"
+              "sdkconfig": "sdkconfig.defaults",
+              "chip_ref": "732f797f9baad2619675536ae5c5fd4913ddb032"
             }
           - {
               "name": "lighting-app-esp32-atom-lite",
@@ -37,7 +38,8 @@ jobs:
               "root": "examples/lighting-app/esp32/",
               "appbin": "chip-lighting-app.bin",
               "idf_target": "esp32",
-              "chip_ref": "v1.1.0.1"
+              "sdkconfig": "sdkconfig.defaults",
+              "chip_ref": "732f797f9baad2619675536ae5c5fd4913ddb032"
             }
           - {
               "name": "lighting-app-esp32-c3-m5stamp",
@@ -45,7 +47,17 @@ jobs:
               "root": "examples/lighting-app/esp32/",
               "appbin": "chip-lighting-app.bin",
               "idf_target": "esp32c3",
-              "chip_ref": "v1.1.0.1"
+              "sdkconfig": "sdkconfig.defaults",
+              "chip_ref": "732f797f9baad2619675536ae5c5fd4913ddb032"
+            }
+          - {
+              "name": "lighting-app-esp32-h2",
+              "dir": "lighting-app-example/esp32-h2/",
+              "root": "examples/lighting-app/esp32/",
+              "appbin": "chip-lighting-app.bin",
+              "idf_target": "esp32h2",
+              "sdkconfig": "sdkconfig.defaults.esp32h2",
+              "chip_ref": "732f797f9baad2619675536ae5c5fd4913ddb032"
             }
           - {
               "name": "light-switch-app-esp32-c3",
@@ -53,7 +65,8 @@ jobs:
               "root": "examples/light-switch-app/esp32/",
               "appbin": "chip-light-switch-app.bin",
               "idf_target": "esp32c3",
-              "chip_ref": "v1.1.0.1"
+              "sdkconfig": "sdkconfig.defaults.esp32c3",
+              "chip_ref": "732f797f9baad2619675536ae5c5fd4913ddb032"
             }
           - {
               "name": "all-clusters-app-esp32-m5-basic-core",
@@ -61,11 +74,12 @@ jobs:
               "root": "examples/all-clusters-app/esp32/",
               "appbin": "chip-all-clusters-app.bin",
               "idf_target": "esp32",
-              "chip_ref": "v1.1.0.1"
+              "sdkconfig": "sdkconfig.defaults",
+              "chip_ref": "732f797f9baad2619675536ae5c5fd4913ddb032"
             }
 
     container:
-      image: connectedhomeip/chip-build-esp32:0.6.18
+      image: ghcr.io/project-chip/chip-build-esp32:5
 
     outputs:
       git-hash: ${{ steps.git-version.outputs.hash }}
@@ -79,7 +93,6 @@ jobs:
         with:
           repository: project-chip/connectedhomeip
           ref: ${{ matrix.firmware.chip_ref }}
-          submodules: true
           path: connectedhomeip
 
       - name: Get firmware git hash
@@ -101,13 +114,14 @@ jobs:
           source scripts/activate.sh
           root="${{ matrix.firmware.root }}"
           rm -f "$root"/sdkconfig
-          cp "../${{ matrix.firmware.dir }}/sdkconfig.defaults" "${root}"
+          cp "../${{ matrix.firmware.dir }}"/sdkconfig* "${root}"
           (
             cd "$root"
-            sed -i "s/CONFIG_DEVICE_SOFTWARE_VERSION=.*/CONFIG_DEVICE_SOFTWARE_VERSION=\"${{ steps.git-version.outputs.hash }}\"/" sdkconfig.defaults
-            idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults" set-target "${{ matrix.firmware.idf_target }}" build
+            sed -i "s/CONFIG_DEVICE_SOFTWARE_VERSION=.*/CONFIG_DEVICE_SOFTWARE_VERSION=\"${{ steps.git-version.outputs.hash }}\"/" sdkconfig_nabucasa
+            idf.py -D SDKCONFIG_DEFAULTS="${{ matrix.firmware.sdkconfig }};sdkconfig_nabucasa" set-target "${{ matrix.firmware.idf_target }}" build
           )
           mkdir -p ../deploy/${{ matrix.firmware.dir }}
+          cp ${{ matrix.firmware.root }}/sdkconfig ../deploy/${{ matrix.firmware.dir }}
           cp ${{ matrix.firmware.root }}/build/${{ matrix.firmware.appbin }} ../deploy/${{ matrix.firmware.dir }}
           cp ${{ matrix.firmware.root }}/build/bootloader/bootloader.bin ../deploy/${{ matrix.firmware.dir }}
           cp ${{ matrix.firmware.root }}/build/partition_table/partition-table.bin ../deploy/${{ matrix.firmware.dir }}
@@ -143,6 +157,7 @@ jobs:
       - name: Copy artifacts
         shell: bash
         run: |
+          rm "artifacts/"*/*/*/sdkconfig
           cp -R "artifacts/"*/* ./
           rm -r "artifacts/"
  
